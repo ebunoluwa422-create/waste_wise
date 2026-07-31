@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WasteWise — Your pickups, on time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F5EC;
+    --surface:#FFFFFF;
+    --ink:#14231F;
+    --ink-soft:#4B5B54;
+    --ink-faint:#8A9690;
+    --forest:#0F2B26;
+    --forest-soft:#173A33;
+    --leaf:#3FA66B;
+    --leaf-dark:#2C8556;
+    --leaf-tint:#E4F3E9;
+    --amber:#F2A93B;
+    --amber-tint:#FCEACB;
+    --line:#E1E4D8;
+    --line-soft:#EAEDE2;
+    --organic:#6FAE4F;
+    --plastic:#2E8FD1;
+    --paper:#C9A227;
+    --glass:#4FB6A6;
+    --metal:#8D95A1;
+    --hazard:#D65B4A;
+    --radius-sm:10px;
+    --radius-md:16px;
+    --radius-lg:22px;
+    --shadow-card: 0 1px 2px rgba(20,35,31,0.04), 0 8px 24px -12px rgba(20,35,31,0.14);
+    --shadow-pop: 0 12px 32px -8px rgba(20,35,31,0.24);
+    font-size:16px;
+  }
+
+  *{box-sizing:border-box;min-width:0;}
+  html,body{margin:0;padding:0;overflow-x:hidden;width:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk','Inter',sans-serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .mono{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    letter-spacing:0.01em;
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2.5px solid var(--leaf-dark);outline-offset:2px;border-radius:6px;}
+  ::-webkit-scrollbar{height:0;width:0;}
+
+  /* ===== App shell ===== */
+  .app-shell{
+    max-width:1280px;
+    margin:0 auto;
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ----- Sidebar (desktop) ----- */
+  .sidebar{
+    display:none;
+    flex-direction:column;
+    width:248px;
+    flex-shrink:0;
+    background:var(--forest);
+    color:#EAF3EE;
+    padding:28px 20px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .sidebar .brand{
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:34px;
+    padding:0 6px;
+  }
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;
+    background:var(--leaf);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .brand-mark svg{width:19px;height:19px;}
+  .brand-name{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;color:#fff;}
+
+  .side-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .side-link{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 12px;
+    border-radius:11px;
+    color:#B9C9C0;
+    font-size:0.925rem;font-weight:500;
+    background:transparent;border:none;
+    width:100%;text-align:left;
+    transition:background .15s ease, color .15s ease;
+  }
+  .side-link svg{width:18px;height:18px;flex-shrink:0;opacity:.85;}
+  .side-link:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .side-link.active{background:var(--leaf);color:#0B1F1A;font-weight:600;}
+  .side-link.active svg{opacity:1;}
+
+  .side-foot{
+    margin-top:auto;
+    padding-top:16px;
+    border-top:1px solid rgba(255,255,255,0.08);
+    display:flex;align-items:center;gap:10px;
+  }
+  .avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:var(--amber);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk';font-weight:700;color:#3A2707;font-size:0.85rem;
+    flex-shrink:0;
+  }
+  .side-foot-text{line-height:1.25;overflow:hidden;}
+  .side-foot-name{font-size:0.86rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .side-foot-sub{font-size:0.72rem;color:#8CA098;}
+
+  /* ----- Main column ----- */
+  .main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px 8px;
+  }
+  .topbar-loc{display:flex;align-items:center;gap:7px;color:var(--ink-soft);font-size:0.85rem;font-weight:500;}
+  .topbar-loc svg{width:15px;height:15px;flex-shrink:0;}
+  .topbar-actions{display:flex;align-items:center;gap:10px;}
+  .icon-btn{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--surface);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+    box-shadow:var(--shadow-card);
+  }
+  .icon-btn svg{width:17px;height:17px;color:var(--ink-soft);}
+  .icon-btn .dot{
+    position:absolute;top:8px;right:8px;
+    width:7px;height:7px;border-radius:50%;background:var(--amber);
+    border:1.5px solid var(--surface);
+  }
+
+  .content{padding:6px 20px 100px;}
+
+  .greeting{padding:14px 2px 18px;}
+  .greeting h1{font-size:1.5rem;color:var(--ink);}
+  .greeting p{margin:4px 0 0;color:var(--ink-soft);font-size:0.92rem;}
+
+  /* ===== Grid layout (desktop reflow) ===== */
+  .grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:16px;
+  }
+
+  /* ----- Hero tracking card (signature element) ----- */
+  .hero-card{
+    grid-column:1 / -1;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:22px 22px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-card::before{
+    content:"";
+    position:absolute; top:0; right:0;
+    width:220px;height:220px;
+    background:radial-gradient(circle at top right, var(--leaf-tint) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .hero-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px;position:relative;}
+  .hero-top>div:first-child{min-width:0;flex:1 1 200px;}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:0.72rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;
+    color:var(--leaf-dark);
+    background:var(--leaf-tint);
+    padding:5px 10px 5px 8px;border-radius:20px;
+  }
+  .hero-eyebrow .pulse{
+    width:7px;height:7px;border-radius:50%;background:var(--leaf-dark);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{transform:scale(1);opacity:1;}
+    50%{transform:scale(1.5);opacity:.55;}
+  }
+  .hero-when{font-size:1.28rem;margin-top:12px;color:var(--ink);}
+  .hero-sub{color:var(--ink-soft);font-size:0.87rem;margin-top:5px;}
+  .hero-track-btn{
+    border:none;background:var(--forest);color:#fff;
+    padding:10px 16px;border-radius:12px;
+    font-size:0.85rem;font-weight:600;
+    display:flex;align-items:center;gap:6px;flex-shrink:0;
+    box-shadow:0 6px 16px -6px rgba(15,43,38,0.5);
+  }
+  .hero-track-btn svg{width:14px;height:14px;}
+
+  /* Stepper */
+  .stepper{position:relative;margin-top:26px;padding:0 4px;}
+  .stepper-track{
+    position:relative;
+    height:4px;background:var(--line-soft);border-radius:4px;
+    margin:0 8px;
+  }
+  .stepper-fill{
+    position:absolute;left:0;top:0;height:100%;
+    width:38%;
+    background:linear-gradient(90deg, var(--leaf-dark), var(--leaf));
+    border-radius:4px;
+    transition:width .5s ease;
+  }
+  .truck-marker{
+    position:absolute;top:50%;left:38%;
+    transform:translate(-50%,-50%);
+    width:30px;height:30px;border-radius:50%;
+    background:var(--leaf);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 12px -2px rgba(44,133,86,0.6), 0 0 0 5px var(--leaf-tint);
+    transition:left .5s ease;
+  }
+  .truck-marker svg{width:15px;height:15px;color:#fff;}
+  @media (prefers-reduced-motion: no-preference){
+    .truck-marker{animation:bob 2.2s ease-in-out infinite;}
+  }
+  @keyframes bob{
+    0%,100%{transform:translate(-50%,-50%);}
+    50%{transform:translate(-50%,-62%);}
+  }
+  .stepper-labels{
+    display:flex;justify-content:space-between;
+    margin-top:16px;
+    padding:0 2px;
+  }
+  .stepper-labels span{
+    font-size:0.68rem;font-weight:600;color:var(--ink-faint);
+    text-align:center;flex:1;
+  }
+  .stepper-labels span.done,.stepper-labels span.current{color:var(--ink);}
+  .stepper-labels span.current{color:var(--leaf-dark);}
+
+  /* ----- Quick actions ----- */
+  .section-label{
+    font-size:0.78rem;font-weight:600;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:0.04em;
+    margin:4px 2px 10px;
+  }
+  .quick-actions{
+    grid-column:1/-1;
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  }
+  .qa-btn{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:16px 10px 12px;
+    display:flex;flex-direction:column;align-items:center;gap:9px;
+    box-shadow:var(--shadow-card);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .qa-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-pop);}
+  .qa-icon{
+    width:40px;height:40px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .qa-icon svg{width:19px;height:19px;}
+  .qa-btn span{font-size:0.76rem;font-weight:600;color:var(--ink);text-align:center;line-height:1.2;}
+
+  /* ----- Category chips (functional, real bin colors) ----- */
+  .categories-wrap{grid-column:1/-1;}
+  .chip-row{
+    display:flex;gap:9px;overflow-x:auto;padding:2px 2px 6px;
+    scroll-snap-type:x proximity;
+  }
+  .chip{
+    scroll-snap-align:start;
+    flex-shrink:0;
+    display:flex;align-items:center;gap:7px;
+    padding:9px 14px 9px 10px;
+    border-radius:30px;border:1.5px solid var(--line);
+    background:var(--surface);
+    font-size:0.8rem;font-weight:600;color:var(--ink-soft);
+    box-shadow:var(--shadow-card);
+  }
+  .chip .swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .chip.active{border-color:transparent;color:#fff;}
+  .chip[data-cat="organic"].active{background:var(--organic);}
+  .chip[data-cat="plastic"].active{background:var(--plastic);}
+  .chip[data-cat="paper"].active{background:var(--paper);}
+  .chip[data-cat="glass"].active{background:var(--glass);}
+  .chip[data-cat="metal"].active{background:var(--metal);}
+  .chip[data-cat="hazard"].active{background:var(--hazard);}
+  .chip.active .swatch{background:#fff;}
+
+  /* ----- Two-col area: activity + right rail ----- */
+  .col-left{grid-column:1/-1;display:flex;flex-direction:column;gap:16px;}
+  .col-right{grid-column:1/-1;display:flex;flex-direction:column;gap:16px;}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:18px 18px 8px;
+  }
+  .card-head{display:flex;align-items:center;justify-content:between;justify-content:space-between;margin-bottom:6px;}
+  .card-head h3{font-size:0.98rem;}
+  .card-head .link{font-size:0.78rem;color:var(--leaf-dark);font-weight:600;}
+
+  .activity-row{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 0;border-top:1px solid var(--line-soft);
+  }
+  .activity-row:first-of-type{border-top:none;}
+  .act-icon{
+    width:36px;height:36px;border-radius:10px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .act-icon svg{width:16px;height:16px;color:#fff;}
+  .act-body{flex:1;min-width:0;}
+  .act-title{font-size:0.86rem;font-weight:600;color:var(--ink);}
+  .act-date{font-size:0.74rem;color:var(--ink-faint);margin-top:1px;}
+  .badge{
+    font-size:0.68rem;font-weight:700;padding:4px 9px;border-radius:20px;
+    white-space:nowrap;
+  }
+  .badge.ok{background:var(--leaf-tint);color:var(--leaf-dark);}
+  .badge.pending{background:var(--amber-tint);color:#8A5A0C;}
+
+  /* Impact stat card */
+  .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .stat{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-md);padding:16px 14px;
+    box-shadow:var(--shadow-card);
+  }
+  .stat .num{font-family:'Space Grotesk';font-size:1.5rem;font-weight:700;color:var(--ink);}
+  .stat .lbl{font-size:0.74rem;color:var(--ink-soft);margin-top:3px;line-height:1.25;}
+
+  /* Nearby drop-off list */
+  .drop-item{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 0;border-top:1px solid var(--line-soft);
+  }
+  .drop-item:first-of-type{border-top:none;}
+  .drop-swatch{width:8px;align-self:stretch;border-radius:6px;flex-shrink:0;}
+  .drop-name{font-size:0.85rem;font-weight:600;}
+  .drop-dist{font-size:0.74rem;color:var(--ink-faint);margin-top:2px;}
+
+  /* Payment mini card */
+  .pay-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0 18px;}
+  .pay-amt{font-family:'Space Grotesk';font-size:1.4rem;font-weight:700;}
+  .pay-due{font-size:0.76rem;color:var(--ink-faint);margin-top:2px;}
+  .pay-btn{
+    background:var(--amber);border:none;color:#3A2707;
+    padding:10px 18px;border-radius:11px;font-weight:700;font-size:0.82rem;
+    box-shadow:0 6px 16px -6px rgba(242,169,59,0.6);
+  }
+
+  /* ----- Bottom tab bar (mobile) ----- */
+  .tab-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--surface);
+    border-top:1px solid var(--line);
+    display:flex;
+    padding:8px 6px calc(env(safe-area-inset-bottom,0px) + 8px);
+    z-index:50;
+    box-shadow:0 -6px 20px -8px rgba(20,35,31,0.12);
+  }
+  .tab-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:none;border:none;padding:6px 2px;color:var(--ink-faint);
+  }
+  .tab-item svg{width:19px;height:19px;}
+  .tab-item span{font-size:0.65rem;font-weight:600;}
+  .tab-item.active{color:var(--leaf-dark);}
+
+  /* ===================== RESPONSIVE ===================== */
+
+  /* Tablet: two-column cards, no sidebar yet */
+  @media (min-width:680px){
+    .quick-actions{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .col-left{grid-column:1/-1;}
+    .stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+  }
+
+  /* Desktop: sidebar appears, layout reflows into columns + right rail */
+  @media (min-width:960px){
+    .sidebar{display:flex;}
+    .tab-bar{display:none;}
+    .content{padding:8px 32px 48px;}
+    .topbar{padding:24px 32px 4px;}
+    .grid{
+      grid-template-columns:minmax(0,2fr) minmax(0,1fr);
+      column-gap:20px;
+    }
+    .hero-card{grid-column:1/2;}
+    .quick-actions{grid-column:2/3;grid-template-columns:repeat(2,minmax(0,1fr));grid-row:1/2;align-content:start;}
+    .categories-wrap{grid-column:1/2;}
+    .col-left{grid-column:1/2;}
+    .col-right{grid-column:2/3;}
+    .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR (desktop) ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z" stroke="#0B1F1A" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V8" stroke="#0B1F1A" stroke-width="1.8"/><path d="M4 8h16" stroke="#0B1F1A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="brand-name">WasteWise</span>
+    </div>
+    <nav class="side-nav">
+      <button class="side-link active"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Home</button>
+      <button class="side-link"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Schedule</button>
+      <button class="side-link"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 3 6.24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 18v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Track pickup</button>
+      <button class="side-link"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6.5V11c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6.5L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Sort waste</button>
+      <button class="side-link"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="6" width="17" height="12.5" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10.5h17" stroke="currentColor" stroke-width="1.8"/><path d="M7 14.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Payments</button>
+      <button class="side-link"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 19.5c1.2-3.4 4-5.2 7.2-5.2s6 1.8 7.2 5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Profile</button>
+    </nav>
+    <div class="side-foot">
+      <div class="avatar">A</div>
+      <div class="side-foot-text">
+        <div class="side-foot-name">Ada Chukwu</div>
+        <div class="side-foot-sub">Ikeja, Lagos</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN COLUMN ============ -->
+  <div class="main-col">
+
+    <div class="topbar">
+      <div class="topbar-loc">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="9.3" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span>25 Oyediran Street, Ikeja</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1 1 12 0c0 4.2 1.2 5.6 1.8 6.4a.8.8 0 0 1-.6 1.3H4.8a.8.8 0 0 1-.6-1.3C4.8 14.6 6 13.2 6 9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span class="dot"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="greeting">
+        <h1 id="greetingText">Good morning, Ada</h1>
+        <p>Here's what's happening with your waste pickups today.</p>
+      </div>
+
+      <div class="grid">
+
+        <!-- ===== HERO: live tracking card (signature element) ===== -->
+        <div class="hero-card">
+          <div class="hero-top">
+            <div>
+              <span class="hero-eyebrow"><span class="pulse"></span>Live · Pickup #WW-4821</span>
+              <div class="hero-when">Tue, Aug 4 · 8:00–10:00 AM</div>
+              <div class="hero-sub">General waste + Recyclables · Collector: Femi O.</div>
+            </div>
+            <button class="hero-track-btn">
+              Track live
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+
+          <div class="stepper">
+            <div class="stepper-track">
+              <div class="stepper-fill" id="stepFill"></div>
+              <div class="truck-marker" id="truckMarker">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M3 7h11v8H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 10h4l3 3v2h-7v-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="17" r="1.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="17" r="1.6" stroke="currentColor" stroke-width="1.6"/></svg>
+              </div>
+            </div>
+            <div class="stepper-labels">
+              <span class="done">Scheduled</span>
+              <span class="current">En route</span>
+              <span>Arrived</span>
+              <span>Collected</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Quick actions ===== -->
+        <div class="quick-actions">
+          <button class="qa-btn">
+            <div class="qa-icon" style="background:var(--leaf-tint);">
+              <svg viewBox="0 0 24 24" fill="none" style="color:var(--leaf-dark);"><rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span>Schedule pickup</span>
+          </button>
+          <button class="qa-btn">
+            <div class="qa-icon" style="background:var(--amber-tint);">
+              <svg viewBox="0 0 24 24" fill="none" style="color:#8A5A0C;"><path d="M12 3 4 6.5V11c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6.5L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span>Sort waste</span>
+          </button>
+          <button class="qa-btn">
+            <div class="qa-icon" style="background:#E4F0FA;">
+              <svg viewBox="0 0 24 24" fill="none" style="color:var(--plastic);"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.3" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg>
+            </div>
+            <span>Recycling locator</span>
+          </button>
+          <button class="qa-btn">
+            <div class="qa-icon" style="background:#F0E9FB;">
+              <svg viewBox="0 0 24 24" fill="none" style="color:#7A4FC4;"><rect x="3.5" y="6" width="17" height="12.5" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10.5h17" stroke="currentColor" stroke-width="1.8"/><path d="M7 14.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span>Pay & billing</span>
+          </button>
+        </div>
+
+        <!-- ===== Category chips ===== -->
+        <div class="categories-wrap">
+          <div class="section-label">What are you disposing of?</div>
+          <div class="chip-row" id="chipRow">
+            <button class="chip active" data-cat="organic"><span class="swatch" style="background:var(--organic);"></span>Organic</button>
+            <button class="chip" data-cat="plastic"><span class="swatch" style="background:var(--plastic);"></span>Plastic</button>
+            <button class="chip" data-cat="paper"><span class="swatch" style="background:var(--paper);"></span>Paper</button>
+            <button class="chip" data-cat="glass"><span class="swatch" style="background:var(--glass);"></span>Glass</button>
+            <button class="chip" data-cat="metal"><span class="swatch" style="background:var(--metal);"></span>Metal</button>
+            <button class="chip" data-cat="hazard"><span class="swatch" style="background:var(--hazard);"></span>Hazardous</button>
+          </div>
+        </div>
+
+        <!-- ===== LEFT column: activity ===== -->
+        <div class="col-left">
+          <div class="card">
+            <div class="card-head">
+              <h3>Recent activity</h3>
+              <span class="link">View all</span>
+            </div>
+            <div class="activity-row">
+              <div class="act-icon" style="background:var(--leaf);"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="act-body">
+                <div class="act-title">General waste collected</div>
+                <div class="act-date">Fri, Jul 24 · 9:12 AM</div>
+              </div>
+              <span class="badge ok">On time</span>
+            </div>
+            <div class="activity-row">
+              <div class="act-icon" style="background:var(--plastic);"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M6 7l1 12.5A2 2 0 0 0 9 21h6a2 2 0 0 0 2-1.5L18 7M9.5 11v6M14.5 11v6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+              <div class="act-body">
+                <div class="act-title">Recyclables dropped at Alausa Hub</div>
+                <div class="act-date">Wed, Jul 22 · 4:40 PM</div>
+              </div>
+              <span class="badge ok">Completed</span>
+            </div>
+            <div class="activity-row">
+              <div class="act-icon" style="background:var(--amber);"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2" stroke="#3A2707" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="8.2" stroke="#3A2707" stroke-width="1.9"/></svg></div>
+              <div class="act-body">
+                <div class="act-title">Pickup rescheduled to Aug 4</div>
+                <div class="act-date">Mon, Jul 20 · 8:05 AM</div>
+              </div>
+              <span class="badge pending">Rescheduled</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Next payment</h3>
+            </div>
+            <div class="pay-row">
+              <div>
+                <div class="pay-amt mono">\u20a62,500</div>
+                <div class="pay-due">Due Aug 5 · Monthly plan</div>
+              </div>
+              <button class="pay-btn">Pay now</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== RIGHT column: impact + drop-off points ===== -->
+        <div class="col-right">
+          <div class="section-label">Your impact this month</div>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="num mono">14</div>
+              <div class="lbl">On-time pickups</div>
+            </div>
+            <div class="stat">
+              <div class="num mono">6.4kg</div>
+              <div class="lbl">Recycled waste</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head">
+              <h3>Nearby drop-off points</h3>
+              <span class="link">Map</span>
+            </div>
+            <div id="dropList">
+              <div class="drop-item">
+                <div class="drop-swatch" style="background:var(--organic);"></div>
+                <div>
+                  <div class="drop-name">Alausa Compost Hub</div>
+                  <div class="drop-dist">0.8 km · Open until 6:00 PM</div>
+                </div>
+              </div>
+              <div class="drop-item">
+                <div class="drop-swatch" style="background:var(--organic);"></div>
+                <div>
+                  <div class="drop-name">Ikeja GRA Green Point</div>
+                  <div class="drop-dist">1.4 km · Open until 7:00 PM</div>
+                </div>
+              </div>
+              <div class="drop-item">
+                <div class="drop-swatch" style="background:var(--organic);"></div>
+                <div>
+                  <div class="drop-name">Oregun Market Bin Station</div>
+                  <div class="drop-dist">2.1 km · Open 24 hours</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOTTOM TAB BAR (mobile) ============ -->
+<nav class="tab-bar">
+  <button class="tab-item active">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="tab-item">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    <span>Schedule</span>
+  </button>
+  <button class="tab-item">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 3 6.24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M4 18v-4h4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    <span>Track</span>
+  </button>
+  <button class="tab-item">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.2" stroke="currentColor" stroke-width="1.9"/><path d="M4.8 19.5c1.2-3.4 4-5.2 7.2-5.2s6 1.8 7.2 5.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
+
+<script>
+  // Greeting based on real time of day
+  (function(){
+    const hour = new Date().getHours();
+    const el = document.getElementById('greetingText');
+    let word = 'Good evening';
+    if (hour < 12) word = 'Good morning';
+    else if (hour < 17) word = 'Good afternoon';
+    el.textContent = word + ', Ada';
+  })();
+
+  // Category chip selection + swap drop-off list swatches/content by category
+  const catData = {
+    organic: [
+      ['Alausa Compost Hub','0.8 km · Open until 6:00 PM'],
+      ['Ikeja GRA Green Point','1.4 km · Open until 7:00 PM'],
+      ['Oregun Market Bin Station','2.1 km · Open 24 hours']
+    ],
+    plastic: [
+      ['Computer Village Recyclers','1.1 km · Open until 5:00 PM'],
+      ['Alausa Compost Hub','0.8 km · Also accepts plastics'],
+      ['Maryland Mall Collection Point','2.6 km · Open until 8:00 PM']
+    ],
+    paper: [
+      ['Ikeja Paper Bank','1.9 km · Open until 6:00 PM'],
+      ['Oregun Market Bin Station','2.1 km · Open 24 hours']
+    ],
+    glass: [
+      ['GRA Glass Bank','1.6 km · Open until 7:00 PM'],
+      ['Maryland Mall Collection Point','2.6 km · Open until 8:00 PM']
+    ],
+    metal: [
+      ['Computer Village Scrap Point','1.2 km · Open until 5:00 PM'],
+      ['Oregun Market Bin Station','2.1 km · Open 24 hours']
+    ],
+    hazard: [
+      ['LASEPA Drop-off Centre','3.4 km · Open weekdays only'],
+    ]
+  };
+  const catColor = {organic:'var(--organic)',plastic:'var(--plastic)',paper:'var(--paper)',glass:'var(--glass)',metal:'var(--metal)',hazard:'var(--hazard)'};
+
+  const chips = document.querySelectorAll('.chip');
+  const dropList = document.getElementById('dropList');
+  chips.forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      chips.forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      const cat = chip.dataset.cat;
+      const items = catData[cat] || [];
+      dropList.innerHTML = items.map(([name,dist])=>`
+        <div class="drop-item">
+          <div class="drop-swatch" style="background:${catColor[cat]};"></div>
+          <div>
+            <div class="drop-name">${name}</div>
+            <div class="drop-dist">${dist}</div>
+          </div>
+        </div>`).join('');
+    });
+  });
+
+  // Mobile tab bar interaction
+  document.querySelectorAll('.tab-item').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.side-link').forEach(link=>{
+    link.addEventListener('click', ()=>{
+      document.querySelectorAll('.side-link').forEach(l=>l.classList.remove('active'));
+      link.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
