@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WasteWise — Your pickups, on time</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F5EC;
+    --surface:#FFFFFF;
+    --ink:#14231F;
+    --ink-soft:#4B5B54;
+    --ink-faint:#8A9690;
+    --forest:#0F2B26;
+    --forest-soft:#173A33;
+    --leaf:#3FA66B;
+    --leaf-dark:#2C8556;
+    --leaf-tint:#E4F3E9;
+    --amber:#F2A93B;
+    --amber-tint:#FCEACB;
+    --line:#E1E4D8;
+    --line-soft:#EAEDE2;
+    --organic:#6FAE4F;
+    --plastic:#2E8FD1;
+    --paper:#C9A227;
+    --glass:#4FB6A6;
+    --metal:#8D95A1;
+    --hazard:#D65B4A;
+    --radius-sm:10px;
+    --radius-md:16px;
+    --radius-lg:22px;
+    --shadow-card: 0 1px 2px rgba(20,35,31,0.04), 0 8px 24px -12px rgba(20,35,31,0.14);
+    --shadow-pop: 0 12px 32px -8px rgba(20,35,31,0.24);
+    font-size:16px;
+  }
+
+  *{box-sizing:border-box;min-width:0;}
+  html,body{margin:0;padding:0;overflow-x:hidden;width:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk','Inter',sans-serif;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin:0;
+  }
+  .mono{
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:500;
+    letter-spacing:0.01em;
+  }
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  :focus-visible{outline:2.5px solid var(--leaf-dark);outline-offset:2px;border-radius:6px;}
+  ::-webkit-scrollbar{height:0;width:0;}
+
+  /* ===== App shell ===== */
+  .app-shell{
+    max-width:1280px;
+    margin:0 auto;
+    display:flex;
+    min-height:100vh;
+  }
+
+  /* ----- Sidebar (desktop) ----- */
+  .sidebar{
+    display:none;
+    flex-direction:column;
+    width:248px;
+    flex-shrink:0;
+    background:var(--forest);
+    color:#EAF3EE;
+    padding:28px 20px;
+    position:sticky;
+    top:0;
+    height:100vh;
+  }
+  .sidebar .brand{
+    display:flex;align-items:center;gap:10px;
+    margin-bottom:34px;
+    padding:0 6px;
+  }
+  .brand-mark{
+    width:34px;height:34px;border-radius:10px;
+    background:var(--leaf);
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  .brand-mark svg{width:19px;height:19px;}
+  .brand-name{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;color:#fff;}
+
+  .side-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+  .side-link{
+    display:flex;align-items:center;gap:12px;
+    padding:11px 12px;
+    border-radius:11px;
+    color:#B9C9C0;
+    font-size:0.925rem;font-weight:500;
+    background:transparent;border:none;
+    width:100%;text-align:left;
+    transition:background .15s ease, color .15s ease;
+  }
+  .side-link svg{width:18px;height:18px;flex-shrink:0;opacity:.85;}
+  .side-link:hover{background:rgba(255,255,255,0.06);color:#fff;}
+  .side-link.active{background:var(--leaf);color:#0B1F1A;font-weight:600;}
+  .side-link.active svg{opacity:1;}
+
+  .side-foot{
+    margin-top:auto;
+    padding-top:16px;
+    border-top:1px solid rgba(255,255,255,0.08);
+    display:flex;align-items:center;gap:10px;
+    text-align:left;
+    transition:opacity .15s ease;
+  }
+  .side-foot:hover{opacity:0.85;}
+  .avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:var(--amber);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk';font-weight:700;color:#3A2707;font-size:0.85rem;
+    flex-shrink:0;
+  }
+  .side-foot-text{line-height:1.25;overflow:hidden;}
+  .side-foot-name{font-size:0.86rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .side-foot-sub{font-size:0.72rem;color:#8CA098;}
+
+  /* ----- Main column ----- */
+  .main-col{flex:1;min-width:0;display:flex;flex-direction:column;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px 8px;
+  }
+  .topbar-loc{display:flex;align-items:center;gap:7px;color:var(--ink-soft);font-size:0.85rem;font-weight:500;}
+  .topbar-loc svg{width:15px;height:15px;flex-shrink:0;}
+  .topbar-actions{display:flex;align-items:center;gap:10px;}
+  .icon-btn{
+    width:38px;height:38px;border-radius:50%;
+    background:var(--surface);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+    box-shadow:var(--shadow-card);
+  }
+  .icon-btn svg{width:17px;height:17px;color:var(--ink-soft);}
+  .icon-btn .dot{
+    position:absolute;top:8px;right:8px;
+    width:7px;height:7px;border-radius:50%;background:var(--amber);
+    border:1.5px solid var(--surface);
+  }
+
+  .content{padding:6px 20px 100px;}
+
+  .greeting{padding:14px 2px 18px;}
+  .greeting h1{font-size:1.5rem;color:var(--ink);}
+  .greeting p{margin:4px 0 0;color:var(--ink-soft);font-size:0.92rem;}
+
+  /* ===== Grid layout (desktop reflow) ===== */
+  .grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:16px;
+  }
+
+  /* ----- Hero tracking card (signature element) ----- */
+  .hero-card{
+    grid-column:1 / -1;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:22px 22px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero-card::before{
+    content:"";
+    position:absolute; top:0; right:0;
+    width:220px;height:220px;
+    background:radial-gradient(circle at top right, var(--leaf-tint) 0%, transparent 70%);
+    pointer-events:none;
+  }
+  .hero-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:12px;position:relative;}
+  .hero-top>div:first-child{min-width:0;flex:1 1 200px;}
+  .hero-eyebrow{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:0.72rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;
+    color:var(--leaf-dark);
+    background:var(--leaf-tint);
+    padding:5px 10px 5px 8px;border-radius:20px;
+  }
+  .hero-eyebrow .pulse{
+    width:7px;height:7px;border-radius:50%;background:var(--leaf-dark);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{transform:scale(1);opacity:1;}
+    50%{transform:scale(1.5);opacity:.55;}
+  }
+  .hero-when{font-size:1.28rem;margin-top:12px;color:var(--ink);}
+  .hero-sub{color:var(--ink-soft);font-size:0.87rem;margin-top:5px;}
+  .hero-track-btn{
+    border:none;background:var(--forest);color:#fff;
+    padding:10px 16px;border-radius:12px;
+    font-size:0.85rem;font-weight:600;
+    display:flex;align-items:center;gap:6px;flex-shrink:0;
+    box-shadow:0 6px 16px -6px rgba(15,43,38,0.5);
+  }
+  .hero-track-btn svg{width:14px;height:14px;}
+
+  /* Stepper */
+  .stepper{position:relative;margin-top:26px;padding:0 4px;}
+  .stepper-track{
+    position:relative;
+    height:4px;background:var(--line-soft);border-radius:4px;
+    margin:0 8px;
+  }
+  .stepper-fill{
+    position:absolute;left:0;top:0;height:100%;
+    width:38%;
+    background:linear-gradient(90deg, var(--leaf-dark), var(--leaf));
+    border-radius:4px;
+    transition:width .5s ease;
+  }
+  .truck-marker{
+    position:absolute;top:50%;left:38%;
+    transform:translate(-50%,-50%);
+    width:30px;height:30px;border-radius:50%;
+    background:var(--leaf);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 12px -2px rgba(44,133,86,0.6), 0 0 0 5px var(--leaf-tint);
+    transition:left .5s ease;
+  }
+  .truck-marker svg{width:15px;height:15px;color:#fff;}
+  @media (prefers-reduced-motion: no-preference){
+    .truck-marker{animation:bob 2.2s ease-in-out infinite;}
+  }
+  @keyframes bob{
+    0%,100%{transform:translate(-50%,-50%);}
+    50%{transform:translate(-50%,-62%);}
+  }
+  .stepper-labels{
+    display:flex;justify-content:space-between;
+    margin-top:16px;
+    padding:0 2px;
+  }
+  .stepper-labels span{
+    font-size:0.68rem;font-weight:600;color:var(--ink-faint);
+    text-align:center;flex:1;
+  }
+  .stepper-labels span.done,.stepper-labels span.current{color:var(--ink);}
+  .stepper-labels span.current{color:var(--leaf-dark);}
+
+  /* ----- Quick actions ----- */
+  .section-label{
+    font-size:0.78rem;font-weight:600;color:var(--ink-soft);
+    text-transform:uppercase;letter-spacing:0.04em;
+    margin:4px 2px 10px;
+  }
+  .quick-actions{
+    grid-column:1/-1;
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;
+  }
+  .qa-btn{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:16px 10px 12px;
+    display:flex;flex-direction:column;align-items:center;gap:9px;
+    box-shadow:var(--shadow-card);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .qa-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-pop);}
+  .qa-icon{
+    width:40px;height:40px;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .qa-icon svg{width:19px;height:19px;}
+  .qa-btn span{font-size:0.76rem;font-weight:600;color:var(--ink);text-align:center;line-height:1.2;}
+
+  /* ----- Category chips (functional, real bin colors) ----- */
+  .categories-wrap{grid-column:1/-1;}
+  .chip-row{
+    display:flex;gap:9px;overflow-x:auto;padding:2px 2px 6px;
+    scroll-snap-type:x proximity;
+  }
+  .chip{
+    scroll-snap-align:start;
+    flex-shrink:0;
+    display:flex;align-items:center;gap:7px;
+    padding:9px 14px 9px 10px;
+    border-radius:30px;border:1.5px solid var(--line);
+    background:var(--surface);
+    font-size:0.8rem;font-weight:600;color:var(--ink-soft);
+    box-shadow:var(--shadow-card);
+  }
+  .chip .swatch{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+  .chip.active{border-color:transparent;color:#fff;}
+  .chip[data-cat="organic"].active{background:var(--organic);}
+  .chip[data-cat="plastic"].active{background:var(--plastic);}
+  .chip[data-cat="paper"].active{background:var(--paper);}
+  .chip[data-cat="glass"].active{background:var(--glass);}
+  .chip[data-cat="metal"].active{background:var(--metal);}
+  .chip[data-cat="hazard"].active{background:var(--hazard);}
+  .chip.active .swatch{background:#fff;}
+
+  /* ----- Two-col area: activity + right rail ----- */
+  .col-left{grid-column:1/-1;display:flex;flex-direction:column;gap:16px;}
+  .col-right{grid-column:1/-1;display:flex;flex-direction:column;gap:16px;}
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:18px 18px 8px;
+  }
+  .card-head{display:flex;align-items:center;justify-content:between;justify-content:space-between;margin-bottom:6px;}
+  .card-head h3{font-size:0.98rem;}
+  .card-head .link{font-size:0.78rem;color:var(--leaf-dark);font-weight:600;}
+
+  .activity-row{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 0;border-top:1px solid var(--line-soft);
+  }
+  .activity-row:first-of-type{border-top:none;}
+  .act-icon{
+    width:36px;height:36px;border-radius:10px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .act-icon svg{width:16px;height:16px;color:#fff;}
+  .act-body{flex:1;min-width:0;}
+  .act-title{font-size:0.86rem;font-weight:600;color:var(--ink);}
+  .act-date{font-size:0.74rem;color:var(--ink-faint);margin-top:1px;}
+  .badge{
+    font-size:0.68rem;font-weight:700;padding:4px 9px;border-radius:20px;
+    white-space:nowrap;
+  }
+  .badge.ok{background:var(--leaf-tint);color:var(--leaf-dark);}
+  .badge.pending{background:var(--amber-tint);color:#8A5A0C;}
+
+  /* Impact stat card */
+  .stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .stat{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-md);padding:16px 14px;
+    box-shadow:var(--shadow-card);
+  }
+  .stat .num{font-family:'Space Grotesk';font-size:1.5rem;font-weight:700;color:var(--ink);}
+  .stat .lbl{font-size:0.74rem;color:var(--ink-soft);margin-top:3px;line-height:1.25;}
+
+  /* Nearby drop-off list */
+  .drop-item{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 0;border-top:1px solid var(--line-soft);
+  }
+  .drop-item:first-of-type{border-top:none;}
+  .drop-swatch{width:8px;align-self:stretch;border-radius:6px;flex-shrink:0;}
+  .drop-name{font-size:0.85rem;font-weight:600;}
+  .drop-dist{font-size:0.74rem;color:var(--ink-faint);margin-top:2px;}
+
+  /* Payment mini card */
+  .pay-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0 18px;}
+  .pay-amt{font-family:'Space Grotesk';font-size:1.4rem;font-weight:700;}
+  .pay-due{font-size:0.76rem;color:var(--ink-faint);margin-top:2px;}
+  .pay-btn{
+    background:var(--amber);border:none;color:#3A2707;
+    padding:10px 18px;border-radius:11px;font-weight:700;font-size:0.82rem;
+    box-shadow:0 6px 16px -6px rgba(242,169,59,0.6);
+  }
+
+  /* ----- Bottom tab bar (mobile) ----- */
+  .tab-bar{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--surface);
+    border-top:1px solid var(--line);
+    display:flex;
+    padding:8px 6px calc(env(safe-area-inset-bottom,0px) + 8px);
+    z-index:50;
+    box-shadow:0 -6px 20px -8px rgba(20,35,31,0.12);
+  }
+  .tab-item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    background:none;border:none;padding:6px 2px;color:var(--ink-faint);
+  }
+  .tab-item svg{width:19px;height:19px;}
+  .tab-item span{font-size:0.65rem;font-weight:600;}
+  .tab-item.active{color:var(--leaf-dark);}
+
+  /* ===================== LANDING PAGE ===================== */
+  #landingView{display:block;}
+  .land-nav{
+    display:flex;align-items:center;justify-content:space-between;
+    max-width:1180px;margin:0 auto;
+    padding:20px 20px 8px;
+  }
+  .land-nav .brand{display:flex;align-items:center;gap:9px;}
+  .land-nav .brand-name{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;color:var(--ink);}
+  .land-nav-links{display:none;align-items:center;gap:28px;font-size:0.88rem;font-weight:600;color:var(--ink-soft);}
+  .land-nav-link{border:none;background:none;font:inherit;color:inherit;padding:4px 2px;transition:color .15s ease;}
+  .land-nav-link:hover{color:var(--ink);}
+  .land-nav-actions{display:flex;align-items:center;gap:10px;}
+  .btn-ghost{
+    border:1.5px solid var(--line);background:var(--surface);color:var(--ink);
+    padding:9px 16px;border-radius:11px;font-size:0.85rem;font-weight:700;
+  }
+  .btn-solid{
+    border:none;background:var(--forest);color:#fff;
+    padding:10px 18px;border-radius:11px;font-size:0.85rem;font-weight:700;
+    box-shadow:0 8px 20px -8px rgba(15,43,38,0.5);
+  }
+  .btn-solid.amber{background:var(--amber);color:#3A2707;box-shadow:0 8px 20px -8px rgba(242,169,59,0.55);}
+  .btn-solid svg, .btn-ghost svg{width:14px;height:14px;vertical-align:-2px;margin-left:2px;}
+
+  .land-hero{
+    max-width:1180px;margin:0 auto;
+    padding:38px 20px 30px;
+    position:relative;
+  }
+  .land-hero-inner{position:relative;text-align:center;max-width:640px;margin:0 auto;}
+  .land-eyebrow{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--leaf-tint);color:var(--leaf-dark);
+    font-size:0.76rem;font-weight:700;letter-spacing:0.02em;
+    padding:6px 13px;border-radius:20px;margin-bottom:18px;
+  }
+  .land-eyebrow .pulse{width:6px;height:6px;border-radius:50%;background:var(--leaf-dark);animation:pulse 1.8s ease-in-out infinite;}
+  .land-hero h1{
+    font-size:2.1rem;line-height:1.15;color:var(--ink);
+  }
+  .land-hero h1 em{color:var(--leaf-dark);font-style:normal;}
+  .land-hero p{
+    margin:16px auto 0;color:var(--ink-soft);font-size:1rem;line-height:1.55;max-width:480px;
+  }
+  .land-hero-actions{
+    display:flex;flex-direction:column;gap:10px;
+    margin-top:26px;align-items:center;
+  }
+  .land-hero-actions .btn-solid, .land-hero-actions .btn-ghost{
+    width:100%;max-width:280px;padding:13px 20px;font-size:0.92rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .land-hero-note{margin-top:14px;font-size:0.78rem;color:var(--ink-faint);}
+
+  /* Hero visual: mini dashboard preview card */
+  .land-visual{
+    margin-top:34px;
+    max-width:520px;margin-left:auto;margin-right:auto;
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);
+    padding:18px 18px 16px;text-align:left;
+    position:relative;
+  }
+  .land-visual::before{
+    content:"";position:absolute;top:-40px;right:-40px;
+    width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle, rgba(63,166,107,0.18), transparent 70%);
+    pointer-events:none;
+  }
+  .land-visual-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .land-visual-top .hero-eyebrow{margin:0;}
+  .mini-stepper{position:relative;margin-top:6px;padding:0 2px;}
+  .mini-track{height:4px;background:var(--line-soft);border-radius:4px;position:relative;}
+  .mini-fill{position:absolute;left:0;top:0;height:100%;width:60%;background:linear-gradient(90deg,var(--leaf-dark),var(--leaf));border-radius:4px;}
+  .mini-dot{position:absolute;top:50%;left:60%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:var(--leaf);box-shadow:0 0 0 4px var(--leaf-tint);}
+  .mini-labels{display:flex;justify-content:space-between;margin-top:12px;font-size:0.64rem;font-weight:700;color:var(--ink-faint);}
+  .mini-labels span.on{color:var(--leaf-dark);}
+
+  .steps-section{max-width:1180px;margin:0 auto;padding:8px 20px 44px;}
+  .steps-row{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:0;
+    position:relative;
+  }
+  .step-card{
+    position:relative;
+    display:flex;flex-direction:column;align-items:flex-start;
+    padding:0 0 34px 0;
+  }
+  .step-card:last-child{padding-bottom:0;}
+  .step-connector{
+    position:absolute;left:23px;top:48px;bottom:8px;width:2px;
+    background:repeating-linear-gradient(to bottom, var(--line) 0, var(--line) 6px, transparent 6px, transparent 12px);
+  }
+  .step-card:last-child .step-connector{display:none;}
+  .step-num{
+    width:48px;height:48px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;
+    flex-shrink:0;margin-bottom:14px;position:relative;z-index:1;
+    box-shadow:0 6px 16px -6px rgba(15,43,38,0.25);
+  }
+  .step-num.n1{background:var(--leaf);color:#0B1F1A;}
+  .step-num.n2{background:var(--amber);color:#3A2707;}
+  .step-num.n3{background:var(--forest);color:#fff;}
+  .step-card h3{font-size:1.05rem;color:var(--ink);margin-bottom:6px;}
+  .step-card p{font-size:0.88rem;color:var(--ink-soft);line-height:1.55;max-width:420px;}
+
+  @media (min-width:760px){
+    .steps-row{grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;}
+    .step-card{padding:0;}
+    .step-connector{
+      left:auto;top:23px;right:-14px;bottom:auto;width:28px;height:2px;
+      background:repeating-linear-gradient(to right, var(--line) 0, var(--line) 6px, transparent 6px, transparent 12px);
+    }
+  }
+
+
+  .land-section{max-width:1180px;margin:0 auto;padding:44px 20px;}
+  .land-section-head{text-align:center;max-width:520px;margin:0 auto 30px;}
+  .land-section-head h2{font-size:1.5rem;color:var(--ink);}
+  .land-section-head p{margin:8px 0 0;color:var(--ink-soft);font-size:0.92rem;}
+
+  .stat-strip{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+    max-width:1180px;margin:0 auto;padding:0 20px 10px;
+  }
+  .stat-strip .stat{text-align:center;padding:18px 10px;}
+  .stat-strip .num{font-size:1.7rem;}
+
+  .feature-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;}
+  .feature-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:22px 20px;box-shadow:var(--shadow-card);
+  }
+  .feature-icon{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+  .feature-icon svg{width:20px;height:20px;}
+  .feature-card h3{font-size:1.02rem;color:var(--ink);}
+  .feature-card p{margin:7px 0 0;color:var(--ink-soft);font-size:0.86rem;line-height:1.5;}
+
+  .cat-strip-wrap{max-width:1180px;margin:0 auto;padding:0 20px 44px;}
+  .cat-strip-label{font-size:0.78rem;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:12px;text-align:center;}
+  .cat-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;}
+
+  .land-cta{
+    background:var(--forest);border-radius:28px;
+    max-width:1180px;margin:0 20px 60px;
+    padding:38px 24px;text-align:center;
+    position:relative;overflow:hidden;
+  }
+  @media(min-width:700px){.land-cta{margin-left:auto;margin-right:auto;}}
+  .land-cta::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(circle at 20% 20%, rgba(63,166,107,0.25), transparent 55%);
+  }
+  .land-cta h2{position:relative;color:#fff;font-size:1.5rem;}
+  .land-cta p{position:relative;color:#B9C9C0;margin:10px auto 22px;max-width:400px;font-size:0.9rem;}
+  .land-cta .btn-solid.amber{position:relative;}
+
+  .land-footer{
+    text-align:center;padding:26px 20px 40px;
+    color:var(--ink-faint);font-size:0.8rem;
+  }
+  .land-footer .brand{justify-content:center;margin-bottom:10px;}
+
+  @media (min-width:760px){
+    .land-nav-links{display:flex;}
+    .land-hero h1{font-size:2.7rem;}
+    .land-hero p{font-size:1.08rem;}
+    .land-hero-actions{flex-direction:row;justify-content:center;}
+    .land-hero-actions .btn-solid, .land-hero-actions .btn-ghost{width:auto;}
+    .stat-strip{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .feature-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  }
+
+  /* ===================== LOGIN SCREEN ===================== */
+  .login-view{
+    display:none;
+    min-height:100vh;
+    align-items:center;
+    justify-content:center;
+    padding:24px 20px;
+    position:relative;
+    overflow:hidden;
+  }
+  .login-view::before{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 15% 12%, rgba(63,166,107,0.16) 0%, transparent 42%),
+      radial-gradient(circle at 88% 82%, rgba(242,169,59,0.14) 0%, transparent 45%);
+    pointer-events:none;
+  }
+  .login-card{
+    position:relative;
+    width:100%;
+    max-width:380px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-pop);
+    padding:34px 28px 28px;
+  }
+  .login-brand{display:flex;align-items:center;gap:10px;margin-bottom:26px;}
+  .login-brand .brand-mark{width:36px;height:36px;}
+  .login-brand .brand-mark svg{width:20px;height:20px;}
+  .login-brand-name{font-family:'Space Grotesk';font-weight:700;font-size:1.2rem;color:var(--ink);}
+
+  .login-head h2{font-size:1.4rem;color:var(--ink);}
+  .login-head p{margin:6px 0 24px;color:var(--ink-soft);font-size:0.87rem;}
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;font-size:0.76rem;font-weight:600;color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .field-input{
+    display:flex;align-items:center;gap:8px;
+    border:1.5px solid var(--line);border-radius:12px;
+    padding:11px 13px;
+    background:#FAFBF7;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .field-input:focus-within{
+    border-color:var(--leaf);
+    background:var(--surface);
+  }
+  .field-input svg{width:16px;height:16px;color:var(--ink-faint);flex-shrink:0;}
+  .field-input input{
+    border:none;outline:none;background:transparent;
+    font-family:inherit;font-size:0.92rem;color:var(--ink);
+    width:100%;
+  }
+  .field-input input::placeholder{color:var(--ink-faint);}
+  .field-toggle{
+    border:none;background:none;color:var(--ink-faint);
+    font-size:0.72rem;font-weight:600;flex-shrink:0;
+  }
+
+  .field-error{
+    display:none;
+    align-items:center;gap:6px;
+    font-size:0.76rem;color:var(--hazard);font-weight:600;
+    margin-top:6px;
+  }
+  .field-error svg{width:13px;height:13px;flex-shrink:0;}
+  .field-input.invalid{border-color:var(--hazard);background:#FDF3F1;}
+  .field.has-error .field-error{display:flex;}
+
+  .login-row-between{
+    display:flex;align-items:center;justify-content:space-between;
+    margin:2px 0 22px;
+  }
+  .remember{display:flex;align-items:center;gap:7px;font-size:0.8rem;color:var(--ink-soft);}
+  .remember input{accent-color:var(--leaf-dark);width:15px;height:15px;}
+  .forgot-link{font-size:0.8rem;font-weight:600;color:var(--leaf-dark);}
+
+  .login-btn{
+    width:100%;border:none;border-radius:12px;
+    background:var(--forest);color:#fff;
+    padding:13px 16px;font-size:0.93rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 10px 24px -8px rgba(15,43,38,0.5);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .login-btn:hover{transform:translateY(-1px);}
+  .login-btn svg{width:15px;height:15px;}
+  .login-btn.loading svg.arrow{display:none;}
+  .login-btn .spinner{
+    display:none;
+    width:15px;height:15px;border-radius:50%;
+    border:2px solid rgba(255,255,255,0.35);border-top-color:#fff;
+  }
+  .login-btn.loading .spinner{display:block;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .login-divider{
+    display:flex;align-items:center;gap:12px;
+    margin:22px 0 18px;
+    color:var(--ink-faint);font-size:0.74rem;font-weight:600;
+  }
+  .login-divider::before,.login-divider::after{
+    content:"";flex:1;height:1px;background:var(--line);
+  }
+
+  .login-foot{
+    text-align:center;font-size:0.85rem;color:var(--ink-soft);
+  }
+  .login-foot button{
+    border:none;background:none;color:var(--leaf-dark);font-weight:700;font-size:0.85rem;
+  }
+
+  .signup-fields{display:none;}
+  .login-card.mode-signup .signup-fields{display:block;}
+  .login-card.mode-signup .login-row-between{display:none;}
+
+  #dashboardRoot{display:none;}
+  #dashboardRoot.visible{display:block;}
+
+  .fade-in{animation:fadeIn .35s ease both;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ===================== MODAL / TOAST / NOTIF PANEL ===================== */
+  .modal-overlay{
+    display:none;
+    position:fixed;inset:0;z-index:200;
+    background:rgba(15,25,22,0.45);
+    align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-card{
+    position:relative;
+    background:var(--surface);border-radius:var(--radius-lg);
+    max-width:420px;width:100%;
+    max-height:86vh;overflow-y:auto;
+    padding:26px 24px 24px;
+    box-shadow:var(--shadow-pop);
+  }
+  .modal-close{
+    position:absolute;top:14px;right:14px;
+    width:32px;height:32px;border-radius:50%;
+    border:none;background:var(--line-soft);color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .modal-close svg{width:15px;height:15px;}
+  .modal-title{font-size:1.15rem;color:var(--ink);margin-bottom:4px;}
+  .modal-sub{font-size:0.85rem;color:var(--ink-soft);margin-bottom:18px;}
+  .modal-section-label{font-size:0.74rem;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:0.03em;margin:16px 0 8px;}
+  .pill-row{display:flex;flex-wrap:wrap;gap:8px;}
+  .pill-opt{
+    border:1.5px solid var(--line);background:var(--surface);
+    padding:9px 14px;border-radius:11px;font-size:0.84rem;font-weight:600;color:var(--ink);
+  }
+  .pill-opt.selected{border-color:var(--leaf-dark);background:var(--leaf-tint);color:var(--leaf-dark);}
+  .modal-confirm-btn{
+    width:100%;margin-top:22px;border:none;border-radius:12px;
+    background:var(--forest);color:#fff;padding:13px 16px;font-size:0.93rem;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .modal-confirm-btn:disabled{opacity:0.6;}
+  .modal-track-stage{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line-soft);}
+  .modal-track-stage:first-of-type{border-top:none;}
+  .modal-track-dot{width:11px;height:11px;border-radius:50%;background:var(--line);flex-shrink:0;}
+  .modal-track-stage.done .modal-track-dot{background:var(--leaf-dark);}
+  .modal-track-stage.current .modal-track-dot{background:var(--leaf);box-shadow:0 0 0 4px var(--leaf-tint);}
+  .modal-track-stage span{font-size:0.88rem;font-weight:600;color:var(--ink-faint);}
+  .modal-track-stage.done span, .modal-track-stage.current span{color:var(--ink);}
+  .modal-success{text-align:center;padding:10px 4px 4px;}
+  .modal-success .check-circle{
+    width:56px;height:56px;border-radius:50%;background:var(--leaf-tint);color:var(--leaf-dark);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 14px;
+  }
+  .modal-success .check-circle svg{width:26px;height:26px;}
+
+  .toast{
+    position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);
+    background:var(--forest);color:#fff;
+    padding:12px 20px;border-radius:30px;
+    font-size:0.85rem;font-weight:600;
+    box-shadow:0 12px 28px -8px rgba(15,43,38,0.55);
+    z-index:300;opacity:0;pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0);}
+
+  .notif-panel{
+    display:none;
+    position:absolute;top:48px;right:0;
+    width:300px;max-width:88vw;
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-pop);
+    padding:8px 0;z-index:150;
+  }
+  .notif-panel.open{display:block;}
+  .notif-panel-head{font-size:0.82rem;font-weight:700;color:var(--ink);padding:8px 16px 10px;border-bottom:1px solid var(--line-soft);}
+  .notif-item{display:flex;gap:11px;padding:11px 16px;border-top:1px solid var(--line-soft);}
+  .notif-item:nth-child(2){border-top:none;}
+  .notif-icon{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .notif-icon svg{width:15px;height:15px;}
+  .notif-text{font-size:0.78rem;color:var(--ink);line-height:1.35;}
+  .notif-time{font-size:0.68rem;color:var(--ink-faint);margin-top:3px;}
+
+  .highlight-pulse{animation:highlightPulse 1.4s ease;}
+  @keyframes highlightPulse{
+    0%{box-shadow:0 0 0 0 rgba(63,166,107,0.5);}
+    40%{box-shadow:0 0 0 8px rgba(63,166,107,0);}
+    100%{box-shadow:0 0 0 0 rgba(63,166,107,0);}
+  }
+
+  /* ===================== RESPONSIVE ===================== */
+
+  /* Tablet: two-column cards, no sidebar yet */
+  @media (min-width:680px){
+    .quick-actions{grid-template-columns:repeat(4,minmax(0,1fr));}
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .col-left{grid-column:1/-1;}
+    .stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));}
+  }
+
+  /* Desktop: sidebar appears, layout reflows into columns + right rail */
+  @media (min-width:960px){
+    .login-card{max-width:400px;padding:40px 34px 32px;}
+    .sidebar{display:flex;}
+    .tab-bar{display:none;}
+    .content{padding:8px 32px 48px;}
+    .topbar{padding:24px 32px 4px;}
+    .grid{
+      grid-template-columns:minmax(0,2fr) minmax(0,1fr);
+      column-gap:20px;
+    }
+    .hero-card{grid-column:1/2;}
+    .quick-actions{grid-column:2/3;grid-template-columns:repeat(2,minmax(0,1fr));grid-row:1/2;align-content:start;}
+    .categories-wrap{grid-column:1/2;}
+    .col-left{grid-column:1/2;}
+    .col-right{grid-column:2/3;}
+    .stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LANDING PAGE ============ -->
+<div id="landingView">
+
+  <nav class="land-nav">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z" stroke="#0B1F1A" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V8" stroke="#0B1F1A" stroke-width="1.8"/><path d="M4 8h16" stroke="#0B1F1A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="brand-name">WasteWise</span>
+    </div>
+    <div class="land-nav-links">
+      <button type="button" class="land-nav-link" id="navHowItWorks">How it works</button>
+      <button type="button" class="land-nav-link" id="navRecycling">Recycling</button>
+    </div>
+    <div class="land-nav-actions">
+      <button class="btn-ghost" id="navLoginBtn">Log in</button>
+      <button class="btn-solid" id="navSignupBtn">Get started</button>
+    </div>
+  </nav>
+
+  <header class="land-hero">
+    <div class="land-hero-inner">
+      <span class="land-eyebrow"><span class="pulse"></span>Built for Ile-Ife neighborhoods</span>
+      <h1>Waste pickup that <em>actually shows up.</em></h1>
+      <p>Schedule collection, sort your waste correctly, and track your pickup live — so you're never left wondering if the truck is coming.</p>
+      <div class="land-hero-actions">
+        <button class="btn-solid amber" id="heroSignupBtn">
+          Create your account
+          <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="btn-ghost" id="heroLoginBtn">I already have an account</button>
+      </div>
+      <div class="land-hero-note">No card required to get started · Free to schedule your first pickup</div>
+    </div>
+
+    <div class="land-visual">
+      <div class="land-visual-top">
+        <span class="hero-eyebrow"><span class="pulse"></span>Live · Pickup #WW-4821</span>
+        <span class="mono" style="font-size:0.72rem;color:var(--ink-faint);">8:00–10:00 AM</span>
+      </div>
+      <div class="mini-stepper">
+        <div class="mini-track">
+          <div class="mini-fill"></div>
+          <div class="mini-dot"></div>
+        </div>
+        <div class="mini-labels">
+          <span class="on">Scheduled</span>
+          <span class="on">En route</span>
+          <span>Arrived</span>
+          <span>Collected</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="steps-section" id="land-how-it-works">
+    <div class="land-section-head">
+      <h2>How it works</h2>
+      <p>Three steps, and you never have to wonder where your waste went.</p>
+    </div>
+    <div class="steps-row">
+      <div class="step-card">
+        <div class="step-connector"></div>
+        <div class="step-num n1">1</div>
+        <h3>Schedule your pickup</h3>
+        <p>Pick a day and time window that works for you. We match you with the nearest available collector automatically.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-connector"></div>
+        <div class="step-num n2">2</div>
+        <h3>Sort as you go</h3>
+        <p>Tell us what you're disposing of — organic, plastic, glass, and more — so it's handled correctly from the start.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num n3">3</div>
+        <h3>Track it live</h3>
+        <p>Watch your collector move from scheduled to en route to collected — no more guessing if today's the day.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="land-section">
+    <div class="land-section-head">
+      <h2>Everything you need, nothing you don't</h2>
+      <p>Built around what people told us matters most: reliability first, then the tools to make waste disposal effortless.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:var(--leaf-tint);">
+          <svg viewBox="0 0 24 24" fill="none" style="color:var(--leaf-dark);"><path d="M4 12a8 8 0 1 1 3 6.24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 18v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Live pickup tracking</h3>
+        <p>Watch your collector move from scheduled to en route to collected, in real time — no more guessing if today's the day.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:var(--amber-tint);">
+          <svg viewBox="0 0 24 24" fill="none" style="color:#8A5A0C;"><rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Flexible scheduling</h3>
+        <p>Pick a pickup window that works for you, and we'll assign the nearest available collector automatically.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:#E4F0FA;">
+          <svg viewBox="0 0 24 24" fill="none" style="color:var(--plastic);"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.3" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg>
+        </div>
+        <h3>Recycling locator</h3>
+        <p>Find the nearest drop-off point for plastic, glass, paper, metal, or e-waste, sorted by category and distance.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="cat-strip-wrap" id="land-recycling">
+    <div class="cat-strip-label">Sort by category, every time</div>
+    <div class="cat-strip" id="landChipRow">
+      <button type="button" class="chip active" data-cat="organic"><span class="swatch" style="background:var(--organic);"></span>Organic</button>
+      <button type="button" class="chip" data-cat="plastic"><span class="swatch" style="background:var(--plastic);"></span>Plastic</button>
+      <button type="button" class="chip" data-cat="paper"><span class="swatch" style="background:var(--paper);"></span>Paper</button>
+      <button type="button" class="chip" data-cat="glass"><span class="swatch" style="background:var(--glass);"></span>Glass</button>
+      <button type="button" class="chip" data-cat="metal"><span class="swatch" style="background:var(--metal);"></span>Metal</button>
+      <button type="button" class="chip" data-cat="hazard"><span class="swatch" style="background:var(--hazard);"></span>Hazardous</button>
+    </div>
+  </div>
+
+  <div class="land-cta">
+    <h2>Ready to stop wondering when pickup is coming?</h2>
+    <p>Join the neighborhoods already scheduling smarter, more reliable waste collection.</p>
+    <button class="btn-solid amber" id="ctaSignupBtn">Create your free account</button>
+  </div>
+
+  <footer class="land-footer">
+    <div class="brand" style="display:flex;">
+      <div class="brand-mark" style="width:26px;height:26px;">
+        <svg viewBox="0 0 24 24" fill="none" style="width:14px;height:14px;"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z" stroke="#0B1F1A" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V8" stroke="#0B1F1A" stroke-width="1.8"/><path d="M4 8h16" stroke="#0B1F1A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="brand-name" style="font-size:1rem;">WasteWise</span>
+    </div>
+    &copy; 2026 WasteWise. Cleaner streets, one pickup at a time.
+  </footer>
+</div>
+
+<!-- ============ LOGIN SCREEN ============ -->
+
+<div class="login-view" id="loginView">
+  <div class="login-card" id="loginCard">
+    <div class="login-brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z" stroke="#0B1F1A" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V8" stroke="#0B1F1A" stroke-width="1.8"/><path d="M4 8h16" stroke="#0B1F1A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="login-brand-name">WasteWise</span>
+    </div>
+
+    <div class="login-head">
+      <h2 id="loginHeadline">Welcome back</h2>
+      <p id="loginSubtext">Log in to schedule pickups and track your collection in real time.</p>
+    </div>
+
+    <div id="loginForm">
+      <div class="field signup-fields">
+        <label for="fullName">Full name</label>
+        <div class="field-input">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 19.5c1.2-3.4 4-5.2 7.2-5.2s6 1.8 7.2 5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input type="text" id="fullName" placeholder="Bisi Adewale" autocomplete="name">
+        </div>
+      </div>
+
+      <div class="field" id="emailField">
+        <label for="loginEmail">Email or phone number</label>
+        <div class="field-input" id="emailInputWrap">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2.2" stroke="currentColor" stroke-width="1.8"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <input type="text" id="loginEmail" placeholder="ada@email.com" value="ada@email.com" autocomplete="username">
+        </div>
+        <div class="field-error"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Enter your email or phone number</div>
+      </div>
+
+      <div class="field signup-fields">
+        <label for="address">Pickup address</label>
+        <div class="field-input">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.3" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg>
+          <input type="text" id="address" placeholder="12 Fajuyi Road, Mayfair, Ile-Ife" autocomplete="street-address">
+        </div>
+      </div>
+
+      <div class="field" id="passField">
+        <label for="loginPass">Password</label>
+        <div class="field-input" id="passInputWrap">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10.5" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+          <input type="password" id="loginPass" placeholder="Enter your password" value="password123" autocomplete="current-password">
+          <button type="button" class="field-toggle" id="togglePass">Show</button>
+        </div>
+        <div class="field-error"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Password must be at least 6 characters</div>
+      </div>
+
+      <div class="login-row-between">
+        <label class="remember"><input type="checkbox"> Remember me</label>
+        <a href="#" class="forgot-link">Forgot password?</a>
+      </div>
+
+      <button type="button" class="login-btn" id="loginBtn">
+        <span class="spinner"></span>
+        <span id="loginBtnText">Log in</span>
+        <svg class="arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+    <p style="text-align:center;font-size:0.74rem;color:var(--ink-faint);margin:14px 0 0;">Demo mode — any email and a 6+ character password will work.</p>
+
+    <div class="login-divider">OR</div>
+
+    <div class="login-foot" id="loginFoot">
+      New to WasteWise? <button type="button" id="toggleMode">Create an account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD (hidden until login) ============ -->
+<div id="dashboardRoot">
+<div class="app-shell">
+
+  <!-- ============ SIDEBAR (desktop) ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z" stroke="#0B1F1A" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V8" stroke="#0B1F1A" stroke-width="1.8"/><path d="M4 8h16" stroke="#0B1F1A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="brand-name">WasteWise</span>
+    </div>
+    <nav class="side-nav" id="sideNav">
+      <button class="side-link active" data-target="home"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>Home</button>
+      <button class="side-link" data-target="schedule"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Schedule</button>
+      <button class="side-link" data-target="track"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 3 6.24" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M4 18v-4h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Track pickup</button>
+      <button class="side-link" data-target="sort"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6.5V11c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6.5L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Sort waste</button>
+      <button class="side-link" data-target="pay"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="6" width="17" height="12.5" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10.5h17" stroke="currentColor" stroke-width="1.8"/><path d="M7 14.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Payments</button>
+      <button class="side-link" data-target="profile"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M4.8 19.5c1.2-3.4 4-5.2 7.2-5.2s6 1.8 7.2 5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Profile</button>
+    </nav>
+    <button class="side-foot" id="logoutBtnDesktop" style="cursor:pointer;border:none;background:none;width:100%;">
+      <div class="avatar">B</div>
+      <div class="side-foot-text">
+        <div class="side-foot-name">Bisi Adewale</div>
+        <div class="side-foot-sub">Log out</div>
+      </div>
+    </button>
+  </aside>
+
+  <!-- ============ MAIN COLUMN ============ -->
+  <div class="main-col">
+
+    <div class="topbar">
+      <div class="topbar-loc">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="9.3" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
+        <span>12 Fajuyi Road, Mayfair, Ile-Ife</span>
+      </div>
+      <div class="topbar-actions" style="position:relative;">
+        <button class="icon-btn" aria-label="Notifications" id="notifBtn">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1 1 12 0c0 4.2 1.2 5.6 1.8 6.4a.8.8 0 0 1-.6 1.3H4.8a.8.8 0 0 1-.6-1.3C4.8 14.6 6 13.2 6 9Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 19a2.5 2.5 0 0 0 5 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          <span class="dot" id="notifDot"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-panel-head">Notifications</div>
+          <div class="notif-item">
+            <div class="notif-icon" style="background:var(--leaf-tint);color:var(--leaf-dark);">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <div class="notif-text">Your collector is en route — arriving around 9:40 AM.</div>
+              <div class="notif-time">12 minutes ago</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon" style="background:var(--amber-tint);color:#8A5A0C;">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="6" width="17" height="12.5" rx="2.5" stroke="currentColor" stroke-width="1.8"/></svg>
+            </div>
+            <div>
+              <div class="notif-text">Payment of NGN 2,500 is due Aug 5.</div>
+              <div class="notif-time">3 hours ago</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-icon" style="background:#E4F0FA;color:var(--plastic);">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+              <div class="notif-text">New drop-off point added near Mayfair.</div>
+              <div class="notif-time">Yesterday</div>
+            </div>
+          </div>
+        </div>
+        <button class="icon-btn" aria-label="Log out" id="logoutBtnTop">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M15 8V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 12h11m0 0-3-3m3 3-3 3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="greeting">
+        <h1 id="greetingText">Good morning, Ada</h1>
+        <p>Here's what's happening with your waste pickups today.</p>
+      </div>
+
+      <div class="grid">
+
+        <!-- ===== HERO: live tracking card (signature element) ===== -->
+        <div class="hero-card" id="section-home">
+          <div class="hero-top">
+            <div>
+              <span class="hero-eyebrow"><span class="pulse"></span>Live · Pickup #WW-4821</span>
+              <div class="hero-when" id="heroWhen">Tue, Aug 4 · 8:00–10:00 AM</div>
+              <div class="hero-sub" id="heroSub">General waste + Recyclables · Collector: Femi A.</div>
+            </div>
+            <button class="hero-track-btn" id="trackLiveBtn">
+              Track live
+              <svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+
+          <div class="stepper" id="section-track">
+            <div class="stepper-track">
+              <div class="stepper-fill" id="stepFill"></div>
+              <div class="truck-marker" id="truckMarker">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M3 7h11v8H3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 10h4l3 3v2h-7v-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="7" cy="17" r="1.6" stroke="currentColor" stroke-width="1.6"/><circle cx="17.5" cy="17" r="1.6" stroke="currentColor" stroke-width="1.6"/></svg>
+              </div>
+            </div>
+            <div class="stepper-labels">
+              <span class="done">Scheduled</span>
+              <span class="current">En route</span>
+              <span>Arrived</span>
+              <span>Collected</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Quick actions ===== -->
+        <div class="quick-actions">
+          <button class="qa-btn" id="qaSchedule">
+            <div class="qa-icon" style="background:var(--leaf-tint);">
+              <svg viewBox="0 0 24 24" fill="none" style="color:var(--leaf-dark);"><rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span>Schedule pickup</span>
+          </button>
+          <button class="qa-btn" id="qaSort">
+            <div class="qa-icon" style="background:var(--amber-tint);">
+              <svg viewBox="0 0 24 24" fill="none" style="color:#8A5A0C;"><path d="M12 3 4 6.5V11c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6.5L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <span>Sort waste</span>
+          </button>
+          <button class="qa-btn" id="qaRecycle">
+            <div class="qa-icon" style="background:#E4F0FA;">
+              <svg viewBox="0 0 24 24" fill="none" style="color:var(--plastic);"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="9.3" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg>
+            </div>
+            <span>Recycling locator</span>
+          </button>
+          <button class="qa-btn" id="qaPay">
+            <div class="qa-icon" style="background:#F0E9FB;">
+              <svg viewBox="0 0 24 24" fill="none" style="color:#7A4FC4;"><rect x="3.5" y="6" width="17" height="12.5" rx="2.5" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10.5h17" stroke="currentColor" stroke-width="1.8"/><path d="M7 14.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span>Pay & billing</span>
+          </button>
+        </div>
+
+        <!-- ===== Category chips ===== -->
+        <div class="categories-wrap" id="section-sort">
+          <div class="section-label">What are you disposing of?</div>
+          <div class="chip-row" id="chipRow">
+            <button class="chip active" data-cat="organic"><span class="swatch" style="background:var(--organic);"></span>Organic</button>
+            <button class="chip" data-cat="plastic"><span class="swatch" style="background:var(--plastic);"></span>Plastic</button>
+            <button class="chip" data-cat="paper"><span class="swatch" style="background:var(--paper);"></span>Paper</button>
+            <button class="chip" data-cat="glass"><span class="swatch" style="background:var(--glass);"></span>Glass</button>
+            <button class="chip" data-cat="metal"><span class="swatch" style="background:var(--metal);"></span>Metal</button>
+            <button class="chip" data-cat="hazard"><span class="swatch" style="background:var(--hazard);"></span>Hazardous</button>
+          </div>
+        </div>
+
+        <!-- ===== LEFT column: activity ===== -->
+        <div class="col-left">
+          <div class="card" id="section-schedule">
+            <div class="card-head">
+              <h3>Recent activity</h3>
+              <button class="link" id="viewAllBtn" style="background:none;border:none;">View all</button>
+            </div>
+            <div id="activityList">
+            <div class="activity-row">
+              <div class="act-icon" style="background:var(--leaf);"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="act-body">
+                <div class="act-title">General waste collected</div>
+                <div class="act-date">Fri, Jul 24 · 9:12 AM</div>
+              </div>
+              <span class="badge ok">On time</span>
+            </div>
+            <div class="activity-row">
+              <div class="act-icon" style="background:var(--plastic);"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h16M6 7l1 12.5A2 2 0 0 0 9 21h6a2 2 0 0 0 2-1.5L18 7M9.5 11v6M14.5 11v6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+              <div class="act-body">
+                <div class="act-title">Recyclables dropped at Sabo Hub</div>
+                <div class="act-date">Wed, Jul 22 · 4:40 PM</div>
+              </div>
+              <span class="badge ok">Completed</span>
+            </div>
+            <div class="activity-row">
+              <div class="act-icon" style="background:var(--amber);"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2" stroke="#3A2707" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="8.2" stroke="#3A2707" stroke-width="1.9"/></svg></div>
+              <div class="act-body">
+                <div class="act-title">Pickup rescheduled to Aug 4</div>
+                <div class="act-date">Mon, Jul 20 · 8:05 AM</div>
+              </div>
+              <span class="badge pending">Rescheduled</span>
+            </div>
+            </div>
+          </div>
+
+          <div class="card" id="section-pay">
+            <div class="card-head">
+              <h3>Next payment</h3>
+            </div>
+            <div class="pay-row" id="payRow">
+              <div>
+                <div class="pay-amt mono" id="payAmt">NGN <span class="mono">2,500</span></div>
+                <div class="pay-due" id="payDue">Due Aug 5 · Monthly plan</div>
+              </div>
+              <button class="pay-btn" id="payNowBtn">Pay now</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== RIGHT column: impact + drop-off points ===== -->
+        <div class="col-right">
+          <div class="section-label">Your impact this month</div>
+          <div class="stat-grid">
+            <div class="stat">
+              <div class="num mono">14</div>
+              <div class="lbl">On-time pickups</div>
+            </div>
+            <div class="stat">
+              <div class="num mono">6.4kg</div>
+              <div class="lbl">Recycled waste</div>
+            </div>
+          </div>
+
+          <div class="card" id="section-recycle">
+            <div class="card-head">
+              <h3>Nearby drop-off points</h3>
+              <button class="link" id="mapToggleBtn" style="background:none;border:none;">Map</button>
+            </div>
+            <div id="mapPlaceholder" style="display:none;"></div>
+            <div id="dropList">
+              <div class="drop-item">
+                <div class="drop-swatch" style="background:var(--organic);"></div>
+                <div>
+                  <div class="drop-name">Sabo Compost Hub</div>
+                  <div class="drop-dist">0.8 km · Open until 6:00 PM</div>
+                </div>
+              </div>
+              <div class="drop-item">
+                <div class="drop-swatch" style="background:var(--organic);"></div>
+                <div>
+                  <div class="drop-name">Mayfair Green Point</div>
+                  <div class="drop-dist">1.4 km · Open until 7:00 PM</div>
+                </div>
+              </div>
+              <div class="drop-item">
+                <div class="drop-swatch" style="background:var(--organic);"></div>
+                <div>
+                  <div class="drop-name">Odo-Ogbe Market Bin Station</div>
+                  <div class="drop-dist">2.1 km · Open 24 hours</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL + TOAST (shared UI for all dashboard actions) ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card" id="modalCard">
+    <button class="modal-close" id="modalCloseBtn" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============ BOTTOM TAB BAR (mobile) ============ -->
+<nav class="tab-bar" id="tabBar">
+  <button class="tab-item active" data-target="home">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 11.5 12 4l8 7.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="tab-item" data-target="schedule">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="5.5" width="16" height="15" rx="2.5" stroke="currentColor" stroke-width="1.9"/><path d="M4 10h16M8.5 3.5v3M15.5 3.5v3" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    <span>Schedule</span>
+  </button>
+  <button class="tab-item" data-target="track">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 3 6.24" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M4 18v-4h4" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l2.5 1.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    <span>Track</span>
+  </button>
+  <button class="tab-item" data-target="profile">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.2" stroke="currentColor" stroke-width="1.9"/><path d="M4.8 19.5c1.2-3.4 4-5.2 7.2-5.2s6 1.8 7.2 5.2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
+</div>
+
+<script>
+  // ---------- View management: landing / login / dashboard ----------
+  // Plain DOM show/hide only. Deliberately avoids location.hash and the
+  // History API: sandboxed preview iframes (same restriction that blocks
+  // localStorage) can silently block writes to window.location, which
+  // would make every nav button a dead click. This version only ever
+  // touches element.style / classList, so it works in any environment.
+  const landingView = document.getElementById('landingView');
+  const loginView = document.getElementById('loginView');
+  const dashboardRoot = document.getElementById('dashboardRoot');
+
+  function showLanding(){
+    landingView.style.display = 'block';
+    loginView.style.display = 'none';
+    dashboardRoot.classList.remove('visible');
+    window.scrollTo(0,0);
+  }
+  function showAuth(targetMode){
+    landingView.style.display = 'none';
+    loginView.style.display = 'flex';
+    dashboardRoot.classList.remove('visible');
+    if (targetMode && targetMode !== mode) {
+      toggleMode.dispatchEvent(new Event('click'));
+    }
+    window.scrollTo(0,0);
+  }
+  function goToDashboard(){
+    landingView.style.display = 'none';
+    loginView.style.display = 'none';
+    dashboardRoot.classList.add('visible');
+    window.scrollTo(0,0);
+  }
+
+  document.getElementById('navLoginBtn').addEventListener('click', () => showAuth('login'));
+  document.getElementById('navSignupBtn').addEventListener('click', () => showAuth('signup'));
+  document.getElementById('heroLoginBtn').addEventListener('click', () => showAuth('login'));
+  document.getElementById('heroSignupBtn').addEventListener('click', () => showAuth('signup'));
+  document.getElementById('ctaSignupBtn').addEventListener('click', () => showAuth('signup'));
+
+  function landingScrollTo(id){
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  document.getElementById('navHowItWorks').addEventListener('click', () => landingScrollTo('land-how-it-works'));
+  document.getElementById('navRecycling').addEventListener('click', () => landingScrollTo('land-recycling'));
+
+  const landCatLabel = {organic:'Organic',plastic:'Plastic',paper:'Paper',glass:'Glass',metal:'Metal',hazard:'Hazardous'};
+  document.querySelectorAll('#landChipRow .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#landChipRow .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      showToast('Create an account to start sorting ' + landCatLabel[chip.dataset.cat] + ' waste');
+    });
+  });
+
+  // ---------- Login / Sign up / Logout flow ----------
+  const loginForm = document.getElementById('loginForm');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginBtnText = document.getElementById('loginBtnText');
+  const loginCard = document.getElementById('loginCard');
+  const toggleMode = document.getElementById('toggleMode');
+  const loginFoot = document.getElementById('loginFoot');
+  const loginHeadline = document.getElementById('loginHeadline');
+  const loginSubtext = document.getElementById('loginSubtext');
+  const emailInput = document.getElementById('loginEmail');
+  const passInput = document.getElementById('loginPass');
+  const emailField = document.getElementById('emailField');
+  const passField = document.getElementById('passField');
+  const emailWrap = document.getElementById('emailInputWrap');
+  const passWrap = document.getElementById('passInputWrap');
+  const togglePass = document.getElementById('togglePass');
+
+  let mode = 'login';
+
+  toggleMode.addEventListener('click', () => {
+    mode = mode === 'login' ? 'signup' : 'login';
+    loginCard.classList.toggle('mode-signup', mode === 'signup');
+    if (mode === 'signup') {
+      loginHeadline.textContent = 'Create your account';
+      loginSubtext.textContent = 'Sign up to schedule pickups and track collection in real time.';
+      loginBtnText.textContent = 'Create account';
+      loginFoot.innerHTML = 'Already have an account? <button type="button" id="toggleMode2">Log in</button>';
+    } else {
+      loginHeadline.textContent = 'Welcome back';
+      loginSubtext.textContent = 'Log in to schedule pickups and track your collection in real time.';
+      loginBtnText.textContent = 'Log in';
+      loginFoot.innerHTML = 'New to WasteWise? <button type="button" id="toggleMode2">Create an account</button>';
+    }
+    document.getElementById('toggleMode2').addEventListener('click', () => toggleMode.dispatchEvent(new Event('click')));
+    clearErrors();
+  });
+
+  togglePass.addEventListener('click', () => {
+    const isPass = passInput.type === 'password';
+    passInput.type = isPass ? 'text' : 'password';
+    togglePass.textContent = isPass ? 'Hide' : 'Show';
+  });
+
+  function clearErrors(){
+    emailField.classList.remove('has-error');
+    passField.classList.remove('has-error');
+    emailWrap.classList.remove('invalid');
+    passWrap.classList.remove('invalid');
+  }
+
+  function validate(){
+    clearErrors();
+    let ok = true;
+    const emailVal = emailInput.value.trim();
+    const passVal = passInput.value.trim();
+    const looksValid = emailVal.includes('@') || /^[0-9+][0-9+\-\s]{6,}$/.test(emailVal);
+    if (!emailVal || !looksValid){
+      emailField.classList.add('has-error');
+      emailWrap.classList.add('invalid');
+      ok = false;
+    }
+    if (!passVal || passVal.length < 6){
+      passField.classList.add('has-error');
+      passWrap.classList.add('invalid');
+      ok = false;
+    }
+    return ok;
+  }
+
+  function attemptLogin(){
+    if (!validate()) return;
+
+    loginBtn.classList.add('loading');
+    loginBtn.disabled = true;
+
+    setTimeout(() => {
+      loginBtn.classList.remove('loading');
+      loginBtn.disabled = false;
+      goToDashboard();
+      dashboardRoot.querySelector('.app-shell').classList.add('fade-in');
+    }, 850);
+  }
+
+  loginBtn.addEventListener('click', attemptLogin);
+  [emailInput, passInput].forEach(inp => {
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); attemptLogin(); }
+    });
+  });
+
+  function logout(){
+    emailInput.value = 'ada@email.com';
+    passInput.value = 'password123';
+    clearErrors();
+    showLanding();
+  }
+  document.getElementById('logoutBtnDesktop').addEventListener('click', logout);
+  document.getElementById('logoutBtnTop').addEventListener('click', logout);
+
+  // ---------- Existing dashboard interactions ----------
+  // Greeting based on real time of day
+  (function(){
+    const hour = new Date().getHours();
+    const el = document.getElementById('greetingText');
+    let word = 'Good evening';
+    if (hour < 12) word = 'Good morning';
+    else if (hour < 17) word = 'Good afternoon';
+    el.textContent = word + ', Bisi';
+  })();
+
+  // Category chip selection + swap drop-off list swatches/content by category
+  const catData = {
+    organic: [
+      ['Sabo Compost Hub','0.8 km · Open until 6:00 PM'],
+      ['Mayfair Green Point','1.4 km · Open until 7:00 PM'],
+      ['Odo-Ogbe Market Bin Station','2.1 km · Open 24 hours']
+    ],
+    plastic: [
+      ['Lagere Recyclers','1.1 km · Open until 5:00 PM'],
+      ['Sabo Compost Hub','0.8 km · Also accepts plastics'],
+      ['Enuwa Collection Point','2.6 km · Open until 8:00 PM']
+    ],
+    paper: [
+      ['Moore Paper Bank','1.9 km · Open until 6:00 PM'],
+      ['Odo-Ogbe Market Bin Station','2.1 km · Open 24 hours']
+    ],
+    glass: [
+      ['GRA Glass Bank','1.6 km · Open until 7:00 PM'],
+      ['Enuwa Collection Point','2.6 km · Open until 8:00 PM']
+    ],
+    metal: [
+      ['Lagere Scrap Point','1.2 km · Open until 5:00 PM'],
+      ['Odo-Ogbe Market Bin Station','2.1 km · Open 24 hours']
+    ],
+    hazard: [
+      ['OSEPA Drop-off Centre','3.4 km · Open weekdays only'],
+    ]
+  };
+  const catColor = {organic:'var(--organic)',plastic:'var(--plastic)',paper:'var(--paper)',glass:'var(--glass)',metal:'var(--metal)',hazard:'var(--hazard)'};
+  const catLabel = {organic:'Organic',plastic:'Plastic',paper:'Paper',glass:'Glass',metal:'Metal',hazard:'Hazardous'};
+
+  const chips = document.querySelectorAll('#chipRow .chip');
+  const dropList = document.getElementById('dropList');
+  chips.forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      chips.forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      const cat = chip.dataset.cat;
+      const items = catData[cat] || [];
+      dropList.innerHTML = items.map(([name,dist])=>`
+        <div class="drop-item">
+          <div class="drop-swatch" style="background:${catColor[cat]};"></div>
+          <div>
+            <div class="drop-name">${name}</div>
+            <div class="drop-dist">${dist}</div>
+          </div>
+        </div>`).join('');
+      showToast(catLabel[cat] + ' selected for your next pickup');
+    });
+  });
+
+  // ---------- Toast ----------
+  const toastEl = document.getElementById('toast');
+  let toastTimer = null;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+  }
+
+  // ---------- Modal ----------
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalBody = document.getElementById('modalBody');
+  function openModal(html){
+    modalBody.innerHTML = html;
+    modalOverlay.classList.add('open');
+  }
+  function closeModal(){
+    modalOverlay.classList.remove('open');
+  }
+  document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
+  modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  // ---------- Highlight-scroll helper ----------
+  function scrollHighlight(id){
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.remove('highlight-pulse');
+    void el.offsetWidth; // restart animation
+    el.classList.add('highlight-pulse');
+  }
+
+  // ---------- Schedule pickup modal ----------
+  function openScheduleModal(){
+    let selectedDate = 'Tue, Aug 4';
+    let selectedTime = '8:00–10:00 AM';
+    const dates = ['Tue, Aug 4', 'Wed, Aug 5', 'Fri, Aug 7', 'Mon, Aug 10'];
+    const times = ['8:00–10:00 AM', '10:00 AM–12:00 PM', '2:00–4:00 PM'];
+    openModal(`
+      <div class="modal-title">Schedule pickup</div>
+      <div class="modal-sub">Pick a date and time window that works for you.</div>
+      <div class="modal-section-label">Date</div>
+      <div class="pill-row" id="dateRow">${dates.map(d=>`<button type="button" class="pill-opt${d===selectedDate?' selected':''}" data-val="${d}">${d}</button>`).join('')}</div>
+      <div class="modal-section-label">Time window</div>
+      <div class="pill-row" id="timeRow">${times.map(t=>`<button type="button" class="pill-opt${t===selectedTime?' selected':''}" data-val="${t}">${t}</button>`).join('')}</div>
+      <button class="modal-confirm-btn" id="confirmScheduleBtn">Confirm pickup</button>
+    `);
+    const dateRow = document.getElementById('dateRow');
+    const timeRow = document.getElementById('timeRow');
+    dateRow.querySelectorAll('.pill-opt').forEach(btn => btn.addEventListener('click', () => {
+      dateRow.querySelectorAll('.pill-opt').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedDate = btn.dataset.val;
+    }));
+    timeRow.querySelectorAll('.pill-opt').forEach(btn => btn.addEventListener('click', () => {
+      timeRow.querySelectorAll('.pill-opt').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedTime = btn.dataset.val;
+    }));
+    document.getElementById('confirmScheduleBtn').addEventListener('click', () => {
+      document.getElementById('heroWhen').textContent = selectedDate + ' · ' + selectedTime;
+      closeModal();
+      showToast('Pickup scheduled for ' + selectedDate);
+      scrollHighlight('section-home');
+    });
+  }
+
+  // ---------- Track live modal ----------
+  function openTrackModal(){
+    openModal(`
+      <div class="modal-title">Live tracking</div>
+      <div class="modal-sub">Pickup #WW-4821 · Collector: Femi A.</div>
+      <div class="modal-track-stage done"><div class="modal-track-dot"></div><span>Scheduled — Tue, Aug 4, 7:50 AM</span></div>
+      <div class="modal-track-stage current"><div class="modal-track-dot"></div><span>En route — ETA 9:40 AM</span></div>
+      <div class="modal-track-stage"><div class="modal-track-dot"></div><span>Arrived</span></div>
+      <div class="modal-track-stage"><div class="modal-track-dot"></div><span>Collected</span></div>
+      <button class="modal-confirm-btn" id="callCollectorBtn">Call collector</button>
+    `);
+    document.getElementById('callCollectorBtn').addEventListener('click', () => {
+      closeModal();
+      showToast('Calling Femi A. …');
+    });
+  }
+  document.getElementById('trackLiveBtn').addEventListener('click', openTrackModal);
+
+  // ---------- Pay now modal ----------
+  let paymentDone = false;
+  function openPayModal(){
+    if (paymentDone) {
+      openModal(`
+        <div class="modal-success">
+          <div class="check-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="modal-title">You're all paid up</div>
+          <div class="modal-sub">NGN 2,500 was paid for this month. Next payment due Sep 5.</div>
+          <button class="modal-confirm-btn" id="closeSuccessBtn">Close</button>
+        </div>
+      `);
+      document.getElementById('closeSuccessBtn').addEventListener('click', closeModal);
+      return;
+    }
+    openModal(`
+      <div class="modal-title">Pay now</div>
+      <div class="modal-sub">Monthly plan · Due Aug 5</div>
+      <div style="text-align:center;padding:14px 0 6px;">
+        <div class="pay-amt mono" style="font-size:2rem;">NGN 2,500</div>
+      </div>
+      <div class="modal-section-label">Payment method</div>
+      <div class="pill-row" id="payMethodRow">
+        <button type="button" class="pill-opt selected" data-val="card">Card</button>
+        <button type="button" class="pill-opt" data-val="transfer">Bank transfer</button>
+        <button type="button" class="pill-opt" data-val="wallet">Wallet</button>
+      </div>
+      <button class="modal-confirm-btn" id="confirmPayBtn"><span id="payBtnLabel">Confirm payment</span></button>
+    `);
+    document.getElementById('payMethodRow').querySelectorAll('.pill-opt').forEach(btn => btn.addEventListener('click', () => {
+      document.getElementById('payMethodRow').querySelectorAll('.pill-opt').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }));
+    document.getElementById('confirmPayBtn').addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      document.getElementById('payBtnLabel').textContent = 'Processing…';
+      setTimeout(() => {
+        openModal(`
+          <div class="modal-success">
+            <div class="check-circle"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="modal-title">Payment successful</div>
+            <div class="modal-sub">NGN 2,500 paid for your monthly plan.</div>
+            <button class="modal-confirm-btn" id="closeSuccessBtn">Done</button>
+          </div>
+        `);
+        document.getElementById('closeSuccessBtn').addEventListener('click', closeModal);
+        document.getElementById('payDue').textContent = 'Paid · Next due Sep 5';
+        document.getElementById('payRow').querySelector('.pay-btn')?.remove();
+        paymentDone = true;
+        showToast('Payment received — thank you!');
+      }, 1000);
+    });
+  }
+  document.getElementById('payNowBtn').addEventListener('click', openPayModal);
+
+
+  // ---------- Profile modal ----------
+  function openProfileModal(){
+    openModal(`
+      <div style="text-align:center;">
+        <div class="avatar" style="width:56px;height:56px;font-size:1.2rem;margin:0 auto 12px;">B</div>
+        <div class="modal-title">Bisi Adewale</div>
+        <div class="modal-sub">bisi@email.com · 12 Fajuyi Road, Mayfair, Ile-Ife</div>
+      </div>
+      <div class="modal-section-label">Account</div>
+      <div class="pill-row">
+        <button type="button" class="pill-opt">Edit profile</button>
+        <button type="button" class="pill-opt">Payment methods</button>
+        <button type="button" class="pill-opt">Notification settings</button>
+      </div>
+      <button class="modal-confirm-btn" id="profileLogoutBtn" style="background:var(--hazard);">Log out</button>
+    `);
+    document.getElementById('profileLogoutBtn').addEventListener('click', () => {
+      closeModal();
+      logout();
+    });
+  }
+
+  // ---------- View all activity ----------
+  const viewAllBtn = document.getElementById('viewAllBtn');
+  const activityList = document.getElementById('activityList');
+  let activityExpanded = false;
+  const extraActivity = `
+    <div class="activity-row">
+      <div class="act-icon" style="background:var(--metal);"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="act-body">
+        <div class="act-title">Metal scraps dropped at Lagere</div>
+        <div class="act-date">Fri, Jul 17 · 3:20 PM</div>
+      </div>
+      <span class="badge ok">Completed</span>
+    </div>
+    <div class="activity-row">
+      <div class="act-icon" style="background:var(--leaf);"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="act-body">
+        <div class="act-title">General waste collected</div>
+        <div class="act-date">Fri, Jul 10 · 9:05 AM</div>
+      </div>
+      <span class="badge ok">On time</span>
+    </div>`;
+  viewAllBtn.addEventListener('click', () => {
+    activityExpanded = !activityExpanded;
+    if (activityExpanded) {
+      activityList.insertAdjacentHTML('beforeend', extraActivity);
+      viewAllBtn.textContent = 'Show less';
+    } else {
+      activityList.querySelectorAll('.activity-row').forEach((row, i) => { if (i >= 3) row.remove(); });
+      viewAllBtn.textContent = 'View all';
+    }
+  });
+
+  // ---------- Map toggle ----------
+  const mapToggleBtn = document.getElementById('mapToggleBtn');
+  const mapPlaceholder = document.getElementById('mapPlaceholder');
+  let mapOpen = false;
+  mapPlaceholder.style.cssText = 'height:150px;border-radius:14px;margin-bottom:12px;background:linear-gradient(135deg,#DCEEE2,#EAF3EE);position:relative;overflow:hidden;';
+  mapPlaceholder.innerHTML = `
+    <svg viewBox="0 0 300 150" style="width:100%;height:100%;">
+      <path d="M0 90 Q75 60 150 85 T300 70" stroke="#B9CDBF" stroke-width="3" fill="none"/>
+      <path d="M0 40 Q100 70 200 35 T300 50" stroke="#C9DBCF" stroke-width="2" fill="none"/>
+      <circle cx="70" cy="70" r="6" fill="#3FA66B"/>
+      <circle cx="150" cy="50" r="6" fill="#F2A93B"/>
+      <circle cx="220" cy="90" r="6" fill="#3FA66B"/>
+      <circle cx="150" cy="72" r="9" fill="#0F2B26"/>
+    </svg>`;
+  mapToggleBtn.addEventListener('click', () => {
+    mapOpen = !mapOpen;
+    mapPlaceholder.style.display = mapOpen ? 'block' : 'none';
+    mapToggleBtn.textContent = mapOpen ? 'Hide map' : 'Map';
+    if (mapOpen) scrollHighlight('section-recycle');
+  });
+
+  // ---------- Notification panel ----------
+  const notifBtn = document.getElementById('notifBtn');
+  const notifPanel = document.getElementById('notifPanel');
+  const notifDot = document.getElementById('notifDot');
+  notifBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notifPanel.classList.toggle('open');
+    notifDot.style.display = 'none';
+  });
+  document.addEventListener('click', (e) => {
+    if (!notifPanel.contains(e.target) && e.target !== notifBtn) notifPanel.classList.remove('open');
+  });
+
+  // ---------- Quick action tiles ----------
+  document.getElementById('qaSchedule').addEventListener('click', openScheduleModal);
+  document.getElementById('qaSort').addEventListener('click', () => scrollHighlight('section-sort'));
+  document.getElementById('qaRecycle').addEventListener('click', () => scrollHighlight('section-recycle'));
+  document.getElementById('qaPay').addEventListener('click', openPayModal);
+
+  // ---------- Sidebar + mobile tab routing ----------
+  function routeTo(target){
+    switch(target){
+      case 'home': scrollHighlight('section-home'); break;
+      case 'schedule': openScheduleModal(); break;
+      case 'track': openTrackModal(); break;
+      case 'sort': scrollHighlight('section-sort'); break;
+      case 'pay': openPayModal(); break;
+      case 'profile': openProfileModal(); break;
+    }
+  }
+  document.querySelectorAll('.tab-item[data-target]').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      routeTo(tab.dataset.target);
+    });
+  });
+  document.querySelectorAll('.side-link[data-target]').forEach(link=>{
+    link.addEventListener('click', ()=>{
+      document.querySelectorAll('.side-link').forEach(l=>l.classList.remove('active'));
+      link.classList.add('active');
+      routeTo(link.dataset.target);
+    });
+  });
+
+  // Landing page is the default view on load — nothing further needed
+  // since #landingView / #loginView / #dashboardRoot already default to
+  // the correct visibility via their base CSS rules.
+</script>
+
+</body>
+</html>
