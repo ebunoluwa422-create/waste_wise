@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import { usePaystackPayment } from 'react-paystack';
+import logo from './assets/logo.png';
 
 export default function App() {
   const [view, setView] = useState('landing'); // landing | login | dashboard
@@ -26,7 +27,7 @@ export default function App() {
 const onPaystackSuccess = (reference) => {
   console.log('Payment successful:', reference);
 
-  fetch('http://localhost:5000/payments', {
+  fetch('/api/payments', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -65,7 +66,7 @@ const initializePayment = usePaystackPayment(paystackConfig);
   }, []);
   useEffect(() => {
   if (view === 'dashboard' && userId && userId !== 'admin') {
-    fetch(`http://localhost:5000/messages/${userId}`)
+    fetch(`/api/messages/${userId}`)
       .then(res => res.json())
       .then(data => setUserMessages(data))
       .catch(err => console.log(err));
@@ -121,16 +122,10 @@ const initializePayment = usePaystackPayment(paystackConfig);
   const Landing = () => (
     <div id="landingView">
       <nav className="land-nav">
-        <div className="brand">
-          <div className="brand-mark">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 8Z" stroke="#0B1F1A" strokeWidth="1.8" strokeLinejoin="round"/>
-              <path d="M9 8V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V8" stroke="#0B1F1A" strokeWidth="1.8"/>
-              <path d="M4 8h16" stroke="#0B1F1A" strokeWidth="1.8" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <span className="brand-name">WasteWise</span>
-        </div>
+       <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+  <img src={logo} alt="WasteWise Logo" style={{ height: '42px', width: 'auto' }} />
+  <span className="brand-name">WasteWise</span>
+</div>
         <div className="land-nav-links">
           <button className="land-nav-link" onClick={() => document.getElementById('land-how-it-works')?.scrollIntoView({ behavior: 'smooth' })}>
             How it works
@@ -354,7 +349,7 @@ const Login = () => {
 
       // ==================== USER SIGNUP ====================
       if (mode === 'signup') {
-        const response = await fetch('http://localhost:5000/register', {
+        const response = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -383,7 +378,7 @@ const Login = () => {
       
       // ==================== USER LOGIN ====================
       else {
-        const response = await fetch('http://localhost:5000/login', {
+        const response = await fetch('/api/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -537,11 +532,11 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const usersRes = await fetch('http://localhost:5000/admin/users');
+        const usersRes = await fetch('/api/admin/users');
         const usersData = await usersRes.json();
         setUsers(usersData);
 
-        const pickupsRes = await fetch('http://localhost:5000/admin/pickups');
+        const pickupsRes = await fetch('/api/admin/pickups');
         const pickupsData = await pickupsRes.json();
         setPickups(pickupsData);
       } catch (error) {
@@ -564,7 +559,7 @@ const AdminDashboard = () => {
   }
 
   try {
-    const response = await fetch('http://localhost:5000/admin/messages', {
+    const response = await fetch('/api/admin/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1349,7 +1344,7 @@ const AdminDashboard = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/pickups', {
+      const response = await fetch('/api/pickups', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
