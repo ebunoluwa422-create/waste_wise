@@ -1,0 +1,36 @@
+{
+    "services": {
+        "frontend": {
+            "root": ".",
+            "framework": "create-react-app"
+        },
+        "backend": {
+            "root": "backend",
+            "entrypoint": "server.js",
+            "routes": [
+                {
+                    "src": "/api/(.*)",
+                    "transforms": [
+                        { "type": "request.path", "op": "set", "args": "/$1" }
+                    ]
+                }
+            ]
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/api/(.*)?",
+            "destination": {
+                "type": "service",
+                "service": "backend"
+            }
+        },
+        {
+            "source": "/(.*)",
+            "destination": {
+                "type": "service",
+                "service": "frontend"
+            }
+        }
+    ]
+}
